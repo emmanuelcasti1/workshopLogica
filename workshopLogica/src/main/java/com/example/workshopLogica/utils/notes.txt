@@ -1,0 +1,13 @@
+
+
+
+| Requisito                                       | Cumplido | Comentario                                                                                                                           |
+| ----------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Algoritmo random para ubicación de dispositivos | ✅        | Se usa varianza regional para decidir, con probabilidad aleatoria, la ubicación de nuevos dispositivos.                              |
+| Hashing para acceso rápido a datos              | Parcial  | Hay hashing para muestras y Bloom filter para áreas, pero no un sistema explícito para recuperación rápida por dispositivo o región. |
+| Diccionarios para gestión dispositivos y datos  | ✅        | Se usa un `Map<String, DeviceMeasurement>` para gestionar dispositivos y datos.                                                      |
+| Gestión de datos en streaming                   | ✅        | El método `processMeasurements` simula procesamiento continuo (streaming).                                                           |
+| Bloom filter para verificar áreas procesadas    | ✅        | Implementado y usado para evitar reprocesar áreas.                                                                                   |
+| MinWise sampling para muestra representativa    | ✅        | Implementado con una estructura de prioridad para mantener muestra de tamaño fijo.                                                   |
+| HyperLogLog para estimar anomalías únicas       | ✅        | Implementado y usado para estimar cardinalidad de anomalías.                                                                         |
+| AMS para varianza de temperatura                | ✅        | Implementado y usado para calcular varianza aproximada global.                                                                       |
