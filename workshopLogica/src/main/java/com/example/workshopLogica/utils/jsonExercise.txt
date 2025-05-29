@@ -1,0 +1,20 @@
+"[
+  '{{repeat(100000)}}',
+  {
+    _id: '{{objectId()}}',
+    device: {
+      id: '{{guid()}}',
+      type: '{{random(""temperature"", ""salinity"", ""current"", ""weather"")}}',
+      status: '{{random(""operational"", ""maintenance needed"", ""non-operational"")}}'
+    },
+    measurement: {
+      value: '{{floating(0, 100)}}',
+      unit: '{{random(""Celsius"" ""PSU"",, ""m/s"", ""hPa"")}}'
+    },
+    measurementTime: '{{date(new Date(2022, 0, 1), new Date(), ""YYYY-MM-ddThh:mm:ss Z"")}}',
+    location: {
+      latitude: '{{floating(-90.000001, 90)}}',
+      longitude: '{{floating(-180.000001, 180)}}'
+    }
+  }
+]"

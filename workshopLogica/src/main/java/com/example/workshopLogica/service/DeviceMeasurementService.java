@@ -63,7 +63,7 @@ public class DeviceMeasurementService {
             try {
                 String prettyJson = objectMapper.writerWithDefaultPrettyPrinter()
                         .writeValueAsString(measurement);
-                System.out.println("Medición procesada:\n" + prettyJson);
+//                System.out.println("Medición procesada:\n" + prettyJson);
 
                 String areaKey = measurement.getLocation().toString();
 
@@ -204,5 +204,9 @@ public class DeviceMeasurementService {
         if (amsCount == 0 || countTemperature == 0) return 0;
         double mean = totalTemperature / countTemperature;
         return (amsSum / amsCount) - (mean * mean);
+    }
+    // Nuevo método para recuperar un dispositivo por ID
+    public DeviceMeasurement getDeviceMeasurementById(String deviceId) {
+        return deviceMap.get(deviceId); // Aquí se usa el hashing para la recuperación rápida
     }
 }
