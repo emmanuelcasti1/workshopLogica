@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DeviceMeasurementService {
@@ -209,4 +210,98 @@ public class DeviceMeasurementService {
     public DeviceMeasurement getDeviceMeasurementById(String deviceId) {
         return deviceMap.get(deviceId); // Aquí se usa el hashing para la recuperación rápida
     }
+
+
+
+    // --- PageRank ---
+    public Map<String, Double> calculatePageRank(double damping, int iterations) {
+        Map<String, Set<String>> graph = new HashMap<>();
+
+        for (DeviceMeasurement a : deviceMap.values()) {
+            Set<String> neighbors = deviceMap.values().stream()
+                    .filter(b -> !a.getDevice().getId().equals(b.getDevice().getId()) &&
+                            a.getLocation().distanceTo(b.getLocation()) < 20)
+                    .map(b -> b.getDevice().getId())
+                    .collect(Collectors.toSet());
+            graph.put(a.getDevice().getId(), neighbors);
+        }
+
+        Map<String, Double> ranks = new HashMap<>();
+        double initialRank = 1.0 / graph.size();
+        Map<String, Double> finalRanks = ranks;
+        graph.keySet().forEach(k -> finalRanks.put(k, initialRank));
+
+        for (int i = 0; i < iterations; i++) {
+            Map<String, Double> newRanks = new HashMap<>();
+            for (String node : graph.keySet()) {
+                double rankSum = 0.0;
+                for (String other : graph.keySet()) {
+                    if (graph.get(other).contains(node)) {
+                        rankSum += ranks.get(other) / graph.get(other).size();
+                    }
+                }
+                newRanks.put(node, (1 - damping) / graph.size() + damping * rankSum);
+            }
+            ranks = newRanks;
+        }
+        return ranks;
+    }
+
+    // --- Markov Chain ---
+    public Map<String, Double> calculateMarkovStationaryDistribution(double distanceThreshold) {
+        List<String> deviceIds = new ArrayList<>(deviceMap.keySet());
+        int n = deviceIds.size();
+        double[][] transitionMatrix = new double[n][n];
+
+        for (int i = 0; i < n; i++) {
+            double total = 0;
+            for (int j = 0; j < n; j++) {
+                if (i != j) {
+                    double dist = deviceMap.get(deviceIds.get(i)).getLocation()
+                            .distanceTo(deviceMap.get(deviceIds.get(j)).getLocation());
+                    if (dist < distanceThreshold) {
+                        transitionMatrix[i][j] = 1.0;
+                        total += 1.0;
+                    }
+                }
+            }
+            for (int j = 0; j < n; j++) {
+                if (total > 0) transitionMatrix[i][j] /= total;
+            }
+        }
+
+        double[] dist = new double[n];
+        Arrays.fill(dist, 1.0 / n);
+
+        for (int iter = 0; iter < 50; iter++) {
+            double[] newDist = new double[n];
+            for (int j = 0; j < n; j++) {
+                for (int i = 0; i < n; i++) {
+                    newDist[j] += dist[i] * transitionMatrix[i][j];
+                }
+            }
+            dist = newDist;
+        }
+
+        Map<String, Double> result = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            result.put(deviceIds.get(i), dist[i]);
+        }
+        return result;
+    }
+
+    // --- MapReduce para varianza regional ---
+    public Map<String, Double> mapReduceRegionalVariance() {
+        return regionTemperatures.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> {
+                            List<Double> temps = e.getValue();
+                            double mean = temps.stream().mapToDouble(Double::doubleValue).average().orElse(0);
+                            return temps.stream().mapToDouble(t -> (t - mean) * (t - mean)).average().orElse(0);
+                        }
+                ));
+    }
 }
+
+
